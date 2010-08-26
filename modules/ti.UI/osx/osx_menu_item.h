@@ -19,6 +19,9 @@ namespace ti
 		void SetCallbackImpl(KMethodRef callback);
 		void SetSubmenuImpl(AutoMenu newSubmenu);
 		void SetEnabledImpl(bool enabled);
+		
+		// TODO: make a static CreateFromNative...
+		void FillFromNativeItem(NSMenuItem *nativeItem);
 
 		NSMenuItem* CreateNative(bool registerNative=true);
 		void DestroyNative(NSMenuItem* realization);

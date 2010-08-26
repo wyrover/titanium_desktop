@@ -44,6 +44,8 @@ namespace ti
 
 		// Create a default menu -- so that keybindings and such work out of the box.
 		this->defaultMenu = [NSApp mainMenu];
+		this->menu = new OSXMenu();
+		this->menu->FillFromNativeMainMenu(this->defaultMenu);
 
 		NSString* appName = [NSString
 			stringWithUTF8String:host->GetApplication()->name.c_str()];

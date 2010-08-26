@@ -119,6 +119,25 @@ namespace ti
 			[[nativeMenu delegate] performSelector:@selector(markAsDirty)];
 		}
 	}
+	
+	void OSXMenu::FillFromNativeMainMenu(NSMenu *nativeMainMenu)
+	{
+		for (int i = 0; i < [nativeMainMenu numberOfItems]; i++)
+		{
+			NSMenuItem* nativeItem = [nativeMainMenu itemAtIndex:i];
+			AutoPtr<OSXMenuItem> item;
+			if ([nativeItem isSeparatorItem]) {
+				item = new OSXMenuItem(MenuItem::SEPARATOR);
+			} else {
+				// On OS X, all NSMenuItems are check-able
+				item = new OSXMenuItem(MenuItem::CHECK);
+			}
+			// Fill in state
+			item->FillFromNativeItem(nativeItem);
+			this->children.push_back(item);
+			this->nativeMenus.push_back(nativeMainMenu);
+		}
+	}
 
 	NSMenu* OSXMenu::CreateNativeNow(bool registerNative)
 	{

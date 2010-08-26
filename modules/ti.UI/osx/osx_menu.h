@@ -17,6 +17,9 @@ namespace ti
 		void InsertItemAtImpl(AutoMenuItem item, unsigned int index);
 		void RemoveItemAtImpl(unsigned int index);
 		void ClearImpl();
+		
+		// TODO: make a static CreateFromNative...
+		void FillFromNativeMainMenu(NSMenu *nativeMainMenu);
 
 		NSMenu* CreateNativeNow(bool registerMenu=true);
 		NSMenu* CreateNativeLazily(bool registerMenu=true);

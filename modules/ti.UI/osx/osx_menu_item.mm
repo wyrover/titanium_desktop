@@ -123,6 +123,30 @@ namespace ti
 	{
 		[item setEnabled:(enabled ? YES : NO)];
 	}
+	
+	void OSXMenuItem::FillFromNativeItem(NSMenuItem *nativeItem)
+	{
+		// Nothing to fill in for separators
+		if (!this->IsSeparator()) {
+			this->label = [[nativeItem title] UTF8String];
+			this->state = [nativeItem state] != NSOffState;
+			this->enabled = [nativeItem isEnabled] == YES;
+			if ([nativeItem image]) {
+				// TODO: find something to signify that there is an image... we can't get the original path from an NSImage
+				// this->iconPath = ;
+				// this->iconURL = ;
+			}
+			if ([nativeItem hasSubmenu]) {
+				// The title for an item with a submenu is actually the submenu's title
+				this->label = [[[nativeItem submenu] title] UTF8String];
+				
+				AutoPtr<OSXMenu> submenu = new OSXMenu();
+				submenu->FillFromNativeMainMenu([nativeItem submenu]);
+				this->submenu = submenu;
+			}
+		}
+		this->nativeItems.push_back(nativeItem);
+	}
 
 	NSMenuItem* OSXMenuItem::CreateNative(bool registerNative)
 	{
