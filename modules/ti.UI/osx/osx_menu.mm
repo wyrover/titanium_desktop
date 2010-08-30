@@ -116,15 +116,18 @@ namespace ti
 		// Otherwise, just mark this menu as dirty and the next time OS X
 		// shows it, it will trigger a redraw.
 		} else {
-			[[nativeMenu delegate] performSelector:@selector(markAsDirty)];
+			if ([nativeMenu delegate] && [[nativeMenu delegate] respondsToSelector:@selector(markAsDirty)]) {
+				[[nativeMenu delegate] performSelector:@selector(markAsDirty)];
+			}
 		}
 	}
 	
 	void OSXMenu::FillFromNativeMainMenu(NSMenu *nativeMainMenu)
 	{
-		for (int i = 0; i < [nativeMainMenu numberOfItems]; i++)
+		NSMenu *menuCopy = [nativeMainMenu copy];
+		for (int i = 0; i < [menuCopy numberOfItems]; i++)
 		{
-			NSMenuItem* nativeItem = [nativeMainMenu itemAtIndex:i];
+			NSMenuItem* nativeItem = [menuCopy itemAtIndex:i];
 			AutoPtr<OSXMenuItem> item;
 			if ([nativeItem isSeparatorItem]) {
 				item = new OSXMenuItem(MenuItem::SEPARATOR);
@@ -135,8 +138,8 @@ namespace ti
 			// Fill in state
 			item->FillFromNativeItem(nativeItem);
 			this->children.push_back(item);
-			this->nativeMenus.push_back(nativeMainMenu);
-		}
+		}	
+		this->nativeMenus.push_back(menuCopy);
 	}
 
 	NSMenu* OSXMenu::CreateNativeNow(bool registerNative)
@@ -151,12 +154,15 @@ namespace ti
 
 	NSMenu* OSXMenu::CreateNative(bool lazy, bool registerNative)
 	{
+		// Not sure if we should be copying the last native menu on this->nativeMenus
+		// and clearing it instead (along the lines of OSXMenuItem::GetNative)
+		
 		// This title should be set by the callee - see OSXMenuItem::NSMenuSetSubmenu
 		NSMenu* menu = [[NSMenu alloc] initWithTitle:@"TopLevelMenu"];
 		OSXMenuDelegate* delegate = [[OSXMenuDelegate alloc] 
 			initWithMenu:this
 			willRegister: registerNative ? YES : NO];
-
+		
 		// Add menu children lazily
 		[delegate markAsDirty];
 		[menu setDelegate:delegate];
@@ -197,7 +203,7 @@ namespace ti
 		while (i != this->children.end()) {
 			AutoMenuItem item = *i++;
 			AutoPtr<OSXMenuItem> osxItem = item.cast<OSXMenuItem>();
-			NSMenuItem* nativeItem = osxItem->CreateNative(registerNative);
+			NSMenuItem* nativeItem = osxItem->GetNative(registerNative);
 
 			int rearOffset = mainMenu ?  MAINMENU_REAR_OFFSET : 0;
 			int index = [nativeMenu numberOfItems] - rearOffset;
@@ -399,7 +405,16 @@ namespace ti
 			}
 
 			if ([item submenu])
+			{
+				title = [[item submenu] title];
+				if ([title rangeOfString:appNameStandin].location != NSNotFound)
+				{
+					title = [title stringByReplacingOccurrencesOfString:appNameStandin
+						withString:appName];
+					[[item submenu] setTitle:title];
+				}
 				ReplaceAppNameStandinInMenu([item submenu], appName);
+			}
 		}
 	}
 }

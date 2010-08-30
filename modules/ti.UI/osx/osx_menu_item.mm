@@ -126,26 +126,36 @@ namespace ti
 	
 	void OSXMenuItem::FillFromNativeItem(NSMenuItem *nativeItem)
 	{
+		NSMenuItem *itemCopy = [nativeItem copy];
 		// Nothing to fill in for separators
 		if (!this->IsSeparator()) {
-			this->label = [[nativeItem title] UTF8String];
-			this->state = [nativeItem state] != NSOffState;
-			this->enabled = [nativeItem isEnabled] == YES;
-			if ([nativeItem image]) {
+			this->label = [[itemCopy title] UTF8String];
+			this->state = [itemCopy state] != NSOffState;
+			this->enabled = [itemCopy isEnabled] == YES;
+			if ([itemCopy image]) {
 				// TODO: find something to signify that there is an image... we can't get the original path from an NSImage
 				// this->iconPath = ;
 				// this->iconURL = ;
 			}
-			if ([nativeItem hasSubmenu]) {
+			if ([itemCopy hasSubmenu]) {
 				// The title for an item with a submenu is actually the submenu's title
-				this->label = [[[nativeItem submenu] title] UTF8String];
+				this->label = [[[itemCopy submenu] title] UTF8String];
 				
 				AutoPtr<OSXMenu> submenu = new OSXMenu();
-				submenu->FillFromNativeMainMenu([nativeItem submenu]);
+				submenu->FillFromNativeMainMenu([itemCopy submenu]);
 				this->submenu = submenu;
 			}
 		}
-		this->nativeItems.push_back(nativeItem);
+		this->nativeItems.push_back(itemCopy);
+	}
+	
+	void OSXMenuItem::FillNativeMenuItem(NSMenuItem *item, bool registerNative)
+	{
+		SetNSMenuItemTitle(item, this->label);
+		SetNSMenuItemIconPath(item, this->iconPath);
+		SetNSMenuItemState(item, this->state);
+		SetNSMenuItemEnabled(item, this->enabled);
+		SetNSMenuItemSubmenu(item, this->submenu, registerNative);
 	}
 
 	NSMenuItem* OSXMenuItem::CreateNative(bool registerNative)
@@ -155,15 +165,15 @@ namespace ti
 		} else {
 			NSMenuItem* item = [[NSMenuItem alloc] 
 				initWithTitle:@"Temp" action:@selector(invoke:) keyEquivalent:@""];
+			
+			// Deal with the target here (instead of FillNativeMenuItem)
+			// because we want to preserve the "First Responder" (nil) target on pre-built items
+			if (![item target]) {
+				OSXMenuItemDelegate* delegate = [[OSXMenuItemDelegate alloc] initWithMenuItem:this];
+				[item setTarget:delegate];
+			}
 
-			OSXMenuItemDelegate* delegate = [[OSXMenuItemDelegate alloc] initWithMenuItem:this];
-			[item setTarget:delegate];
-
-			SetNSMenuItemTitle(item, this->label);
-			SetNSMenuItemIconPath(item, this->iconPath);
-			SetNSMenuItemState(item, this->state);
-			SetNSMenuItemEnabled(item, this->enabled);
-			SetNSMenuItemSubmenu(item, this->submenu, registerNative);
+			this->FillNativeMenuItem(item, registerNative);
 
 			if (registerNative)
 			{
@@ -172,6 +182,23 @@ namespace ti
 
 			return item;
 		}
+	}
+	
+	// Return NSMenuItem associated with this menu item or create one
+	NSMenuItem* OSXMenuItem::GetNative(bool registerNative)
+	{
+		NSMenuItem *nativeItem = nil;
+		if (this->nativeItems.size() > 0) {
+			nativeItem = this->nativeItems.back();
+			nativeItem = [nativeItem copy];
+			this->FillNativeMenuItem(nativeItem, registerNative);
+			if (registerNative) {
+				this->nativeItems.push_back(nativeItem);
+			}
+		} else {
+			nativeItem = this->CreateNative(registerNative);
+		}
+		return nativeItem;
 	}
 
 	void OSXMenuItem::DestroyNative(NSMenuItem* realization)

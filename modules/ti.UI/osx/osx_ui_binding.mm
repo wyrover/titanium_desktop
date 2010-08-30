@@ -44,13 +44,15 @@ namespace ti
 
 		// Create a default menu -- so that keybindings and such work out of the box.
 		this->defaultMenu = [NSApp mainMenu];
-		this->menu = new OSXMenu();
-		this->menu->FillFromNativeMainMenu(this->defaultMenu);
 
 		NSString* appName = [NSString
 			stringWithUTF8String:host->GetApplication()->name.c_str()];
 		OSXMenu::ReplaceAppNameStandinInMenu(this->defaultMenu, appName);
 		OSXMenu::SetupInspectorItem(this->defaultMenu);
+		
+		this->menu = new OSXMenu();
+		this->menu->FillFromNativeMainMenu(this->defaultMenu);
+		
 		this->SetupMainMenu(true);
 
 		// Register our custom URL handler

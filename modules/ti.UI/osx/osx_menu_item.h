@@ -22,8 +22,10 @@ namespace ti
 		
 		// TODO: make a static CreateFromNative...
 		void FillFromNativeItem(NSMenuItem *nativeItem);
+		void FillNativeMenuItem(NSMenuItem *item, bool registerNative);
 
 		NSMenuItem* CreateNative(bool registerNative=true);
+		NSMenuItem* GetNative(bool registerNative=true);
 		void DestroyNative(NSMenuItem* realization);
 		void UpdateNativeMenuItems();
 		virtual void HandleClickEvent(KObjectRef source);
