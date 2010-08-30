@@ -19,6 +19,12 @@ namespace ti
 		Menu()
 	{
 	}
+	
+	OSXMenu::OSXMenu(bool builtIn) :
+		Menu(),
+		builtIn(builtIn)
+	{
+	}
 
 	OSXMenu::~OSXMenu()
 	{
@@ -52,6 +58,11 @@ namespace ti
 	void OSXMenu::Clear()
 	{
 		this->UpdateNativeMenus();
+	}
+	
+	bool OSXMenu::IsBuiltIn()
+	{
+		return this->builtIn;
 	}
 
 	/*static*/
@@ -184,12 +195,26 @@ namespace ti
 		// count. This method must be matched with a DestroyNative(...) call
 		// to avoid a memory leak.
 		[nativeMainMenu retain];
-
-		OSXMenu::CopyMenu(defaultMenu, nativeMainMenu);
+		
+		[nativeMainMenu setTitle:[defaultMenu title]];
+		[nativeMainMenu setAutoenablesItems:NO];
+		this->AddChildrenToNativeMenu(nativeMainMenu, true);
+		if (!OSXMenu::IsNativeMenuAMainMenu(nativeMainMenu)) {
+			[nativeMainMenu insertItem:OSXMenu::CopyMenuItem([defaultMenu itemAtIndex:0])
+				atIndex:0];
+		}
+		
+		// We MUST end with a window menu and a help menu
+		// This is cheap security; we can probably do better...
+		// TODO: Might identify these better by setting the tag or represented object on them...?
+		if ([nativeMainMenu numberOfItems] < 3) {
+			// Copy the last two items from default menu in (window and help)
+			[nativeMainMenu addItem:OSXMenu::CopyMenuItem([defaultMenu itemAtIndex:2])];
+			[nativeMainMenu addItem:OSXMenu::CopyMenuItem([defaultMenu itemAtIndex:3])];
+		}
+		
 		OSXMenu::SetupInspectorItem(nativeMainMenu);
-
-		this->AddChildrenToNativeMenu(nativeMainMenu, true, true);
-
+		
 		// The main menu needs all NSMenuItems in it to have submenus for 
 		// proper display. So we just add empty submenus to those items missing them.
 		OSXMenu::EnsureAllItemsHaveSubmenus(nativeMainMenu);
@@ -270,9 +295,14 @@ namespace ti
 	/*static*/
 	bool OSXMenu::IsNativeMenuAMainMenu(NSMenu* menu)
 	{
+		// Getting the app name is hard.
+		OSXUIBinding* binding = dynamic_cast<OSXUIBinding*>(UIBinding::GetInstance());
+		NSString* appName = [NSString stringWithUTF8String:binding->GetHost()->GetApplication()->name.c_str()];
+		
 		return ([menu numberOfItems] > 0 &&
 			([[[[menu itemAtIndex:0] submenu] title] isEqualToString:@"Apple"]
-			 || [[[[menu itemAtIndex:0] submenu] title] isEqualToString:@"APPNAME"]));
+			 || [[[[menu itemAtIndex:0] submenu] title] isEqualToString:@"APPNAME"]
+			 || [[[[menu itemAtIndex:0] submenu] title] isEqualToString:appName]));
 	}
 
 	/*static*/

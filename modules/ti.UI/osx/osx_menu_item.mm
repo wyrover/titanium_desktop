@@ -52,6 +52,7 @@ namespace ti
 	/*static*/
 	void OSXMenuItem::SetNSMenuItemTitle(NSMenuItem* item, std::string& title)
 	{
+		// TODO: replace "APPNAME" with the app's name? Requires coordination for all platforms
 		NSString* nstitle = [NSString stringWithUTF8String:title.c_str()];
 		[item setTitle:nstitle];
 
@@ -109,7 +110,15 @@ namespace ti
 	{
 		if (!submenu.isNull()) {
 			AutoPtr<OSXMenu> osxSubmenu = submenu.cast<OSXMenu>();
-			NSMenu* nativeMenu = osxSubmenu->CreateNativeLazily(registerNative);
+			// Some built-in menus have to be created now, otherwise there will be badness.
+			// e.g. The "Window" menu MUST have more than 0 items in it.
+			NSMenu* nativeMenu = nil;
+			if (osxSubmenu->IsBuiltIn()) {
+				nativeMenu = osxSubmenu->CreateNativeNow(registerNative);
+			} else {
+				nativeMenu = osxSubmenu->CreateNativeLazily(registerNative);
+			}
+			// TODO: replace "APPNAME" with the app's name? Requires coordination for all platforms
 			[nativeMenu setTitle:[item title]];
 			[item setSubmenu:nativeMenu];
 
@@ -141,7 +150,7 @@ namespace ti
 				// The title for an item with a submenu is actually the submenu's title
 				this->label = [[[itemCopy submenu] title] UTF8String];
 				
-				AutoPtr<OSXMenu> submenu = new OSXMenu();
+				AutoPtr<OSXMenu> submenu = new OSXMenu(true);
 				submenu->FillFromNativeMainMenu([itemCopy submenu]);
 				this->submenu = submenu;
 			}

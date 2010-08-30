@@ -11,8 +11,10 @@ namespace ti
 	{
 	public:
 		OSXMenu();
+		OSXMenu(bool builtIn);
 		~OSXMenu();
 
+		bool IsBuiltIn();
 		void AppendItemImpl(AutoMenuItem item);
 		void InsertItemAtImpl(AutoMenuItem item, unsigned int index);
 		void RemoveItemAtImpl(unsigned int index);
@@ -47,6 +49,7 @@ namespace ti
 		void Clear();
 		NSMenu* CreateNative(bool lazy, bool registerMenu);
 		std::vector<NSMenu*> nativeMenus;
+		bool builtIn;
 	};
 }
 #endif
