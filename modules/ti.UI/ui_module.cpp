@@ -31,7 +31,6 @@ namespace ti
 		host->GetGlobalObject()->SetObject("UI", this->uiBinding);
 		host->GetGlobalObject()->SetObject("Notification", this->uiBinding);
 
-		ScriptEvaluator::Initialize();
 		AppConfig* config = AppConfig::Instance();
 		if (!config)
 		{

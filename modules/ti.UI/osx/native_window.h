@@ -11,6 +11,7 @@
 #import <WebKit/WebInspector.h>
 
 @class WebViewDelegate;
+@class WebTitaniumDelegate;
 
 using namespace ti;
 
@@ -18,7 +19,8 @@ using namespace ti;
 {
 	BOOL canReceiveFocus;
 	WebView* webView;
-	WebViewDelegate* delegate;
+	WebViewDelegate* viewDelegate;
+	WebTitaniumDelegate* tiDelegate;
 	BOOL requiresDisplay;
 	AutoPtr<OSXUserWindow>* userWindow;
 	WebInspector* inspector;

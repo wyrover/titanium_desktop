@@ -34,7 +34,6 @@ namespace ti {
 #include "menu_item.h"
 #include "tray_item.h"
 #include "ui_binding.h"
-#include "script_evaluator.h"
 #include "clipboard.h"
 
 #ifdef OS_LINUX

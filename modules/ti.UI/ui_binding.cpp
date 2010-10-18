@@ -3,7 +3,9 @@
  * see LICENSE in the root folder for details on the license.
  * Copyright (c) 2009 Appcelerator, Inc. All Rights Reserved.
  */
+
 #include "ui_module.h"
+
 #include <string>
 
 namespace ti
@@ -42,6 +44,8 @@ namespace ti
 
 		// Initialize notifications
 		this->SetBool("nativeNotifications", Notification::InitializeImpl());
+
+		this->webkitClient = new WebKitClient;
 
 		this->SetObject("Clipboard", new Clipboard());
 		Logger::AddLoggerCallback(&UIBinding::Log);
@@ -94,6 +98,8 @@ namespace ti
 
 		// Shutdown notifications
 		Notification::ShutdownImpl();
+
+		delete this->webkitClient;
 	}
 
 	Host* UIBinding::GetHost()
