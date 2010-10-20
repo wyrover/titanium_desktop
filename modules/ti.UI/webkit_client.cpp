@@ -6,12 +6,30 @@
 
 #include "webkit_client.h"
 
+#include <kroll/kroll.h>
+#include <kroll/javascript/javascript_module.h>
+#include <JavaScriptCore/JSContextRef.h>
+
+using namespace kroll;
+
 namespace ti {
 
 bool WebKitClient::evaluateScript(void* context, const char* source, const char* mimetype)
 {
-    // TODO: implement
-    return false;
+	printf("Asked to evaluate code with type ... %s\n", mimetype);
+
+	SharedPtr<Script> script = Script::GetInstance();
+
+	if (!script->CanEvaluate(mimetype))
+		return false;
+
+	JSContextRef ctx = reinterpret_cast<JSContextRef>(context);
+	KObjectRef scope = new KKJSObject(ctx, JSContextGetGlobalObject(ctx));
+	script->Evaluate(mimetype, "<script>", source, scope);
+
+	printf("Done evaluating!\n\n");
+
+	return true;
 }
 
 }
