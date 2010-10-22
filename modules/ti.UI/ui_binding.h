@@ -10,7 +10,6 @@
 #include <kroll/kroll.h>
 #include "menu_item.h"
 #include "notification.h"
-#include "webkit_client.h"
 
 namespace ti
 {
@@ -75,8 +74,6 @@ namespace ti
 		virtual void SetBadge(std::string& badgeLabel) {}
 		virtual void SetBadgeImage(std::string& badgeImagePath) {}
 
-		WebKitClient* GetWebKitClient() { return webkitClient; }
-
 		static void ErrorDialog(std::string);
 		static inline UIBinding* GetInstance() { return instance; }
 
@@ -87,7 +84,6 @@ namespace ti
 		std::vector<AutoUserWindow> openWindows;
 		std::vector<AutoTrayItem> trayItems;
 		std::string iconURL;
-		WebKitClient* webkitClient;
 
 		static void Log(Logger::Level level, std::string& message);
 	};

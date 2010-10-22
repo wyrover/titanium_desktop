@@ -5,10 +5,7 @@
  */
 #include "../ui_module.h"
 
-#import <WebKit/WebTitaniumDelegate.h>
-#import <WebCore/TitaniumClient.h>
-
-using WebCore::TitaniumClient;
+#include "webscript_delegate.h"
 
 @implementation NativeWindow
 - (BOOL)canBecomeKeyWindow
@@ -36,10 +33,7 @@ using WebCore::TitaniumClient;
 	[self setTitle:[NSString stringWithUTF8String:config->GetTitle().c_str()]];
 	[self setHasShadow:true];
 
-	TitaniumClient* tiClient = UIBinding::GetInstance()->GetWebKitClient();
-	tiDelegate = [[WebTitaniumDelegate alloc] initWithClient:tiClient];
-
-	webView = [[WebView alloc] initWithFrame:[[self contentView] bounds] frameName:nil groupName:nil titaniumDelegate:tiDelegate];
+	webView = [[WebView alloc] initWithFrame:[[self contentView] bounds]];
 
 	viewDelegate = [[WebViewDelegate alloc] initWithWindow:self];
 	[webView setFrameLoadDelegate:viewDelegate];
@@ -47,7 +41,8 @@ using WebCore::TitaniumClient;
 	[webView setResourceLoadDelegate:viewDelegate];
 	[webView setPolicyDelegate:viewDelegate];
 
-	[[webView preferences] setPlugInsEnabled:FALSE];
+	scriptDelegate = [[WebScriptDelegate alloc] init];
+	[webView setScriptControllerDelegate:scriptDelegate];
 
 	// Because of the Win32 implementation, this setting
 	// only applies during window creation.
@@ -98,12 +93,13 @@ using WebCore::TitaniumClient;
 	[webView setUIDelegate:nil];
 	[webView setResourceLoadDelegate:nil];
 	[webView setPolicyDelegate:nil];
+	[webView setScriptControllerDelegate:nil];
 
 	[viewDelegate release];
 	viewDelegate = nil;
 
-	[tiDelegate release];
-	tiDelegate = nil;
+	[scriptDelegate release];
+	scriptDelegate = nil;
 
 	[inspector release];
 	[webView release];

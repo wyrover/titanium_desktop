@@ -45,8 +45,6 @@ namespace ti
 		// Initialize notifications
 		this->SetBool("nativeNotifications", Notification::InitializeImpl());
 
-		this->webkitClient = new WebKitClient;
-
 		this->SetObject("Clipboard", new Clipboard());
 		Logger::AddLoggerCallback(&UIBinding::Log);
 	}
@@ -98,8 +96,6 @@ namespace ti
 
 		// Shutdown notifications
 		Notification::ShutdownImpl();
-
-		delete this->webkitClient;
 	}
 
 	Host* UIBinding::GetHost()
