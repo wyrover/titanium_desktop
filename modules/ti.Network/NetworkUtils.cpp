@@ -60,9 +60,10 @@ void SetCurlProxySettings(CURL* curlHandle, SharedProxy proxy)
 
 void SetStandardCurlHandleOptions(CURL* handle)
 {
-    // non negative number means don't verify peer cert - we might want to 
+    // Zero means don't verify peer cert - we might want to
     // make this configurable in the future
-    SET_CURL_OPTION(handle, CURLOPT_SSL_VERIFYPEER, 1);
+    SET_CURL_OPTION(handle, CURLOPT_SSL_VERIFYPEER, 0);
+    SET_CURL_OPTION(handle, CURLOPT_SSL_VERIFYHOST, 0);
     SET_CURL_OPTION(handle, CURLOPT_CAINFO,
         ::UTF8ToSystem(Titanium::NetworkModule::GetRootCertPath()).c_str());
 
