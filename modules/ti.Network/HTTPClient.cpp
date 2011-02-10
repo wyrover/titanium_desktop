@@ -863,10 +863,20 @@ void HTTPClient::ExecuteRequest()
         SET_CURL_OPTION(curlHandle, CURLOPT_WRITEHEADER, this);
         SET_CURL_OPTION(curlHandle, CURLOPT_WRITEDATA, this);
         SET_CURL_OPTION(curlHandle, CURLOPT_PROGRESSDATA, this);
+
         // Zero means don't verify peer cert - we might want to
         // make this configurable in the future
         SET_CURL_OPTION(curlHandle, CURLOPT_SSL_VERIFYPEER, 0);
         SET_CURL_OPTION(curlHandle, CURLOPT_SSL_VERIFYHOST, 0);
+
+        // Use native SSPI/SPENGO authentication
+        SET_CURL_OPTION(curlHandle, CURLOPT_HTTPAUTH, CURLAUTH_MS_NEGOTIATE);
+
+        // Send same request to new locations
+        SET_CURL_OPTION(curlHandle, CURLOPT_FOLLOWLOCATION, 1);
+
+        // Keep sending auth info when following locations
+        SET_CURL_OPTION(curlHandle, CURLOPT_UNRESTRICTED_AUTH, 1);
 
         // Progress must be turned on for CURLOPT_PROGRESSFUNCTION to be called.
         SET_CURL_OPTION(curlHandle, CURLOPT_NOPROGRESS, 0);

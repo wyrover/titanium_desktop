@@ -64,6 +64,16 @@ void SetStandardCurlHandleOptions(CURL* handle)
     // make this configurable in the future
     SET_CURL_OPTION(handle, CURLOPT_SSL_VERIFYPEER, 0);
     SET_CURL_OPTION(handle, CURLOPT_SSL_VERIFYHOST, 0);
+
+    // Use native SSPI/SPENGO authentication
+    SET_CURL_OPTION(handle, CURLOPT_HTTPAUTH, CURLAUTH_MS_NEGOTIATE);
+
+	// Send same request to new locations
+    SET_CURL_OPTION(handle, CURLOPT_FOLLOWLOCATION, 1);
+
+    // Keep sending auth info when following locations
+    SET_CURL_OPTION(handle, CURLOPT_UNRESTRICTED_AUTH, 1);
+
     SET_CURL_OPTION(handle, CURLOPT_CAINFO,
         ::UTF8ToSystem(Titanium::NetworkModule::GetRootCertPath()).c_str());
 
